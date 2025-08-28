@@ -9,7 +9,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateUser } from "@/store/slices/authSlice";
 import { updateStudent, updateStudentFromRealtime } from "@/store/slices/studentsSlice";
 import { updateSubject, updateSubjectsFromRealtime } from "@/store/slices/subjectsSlice";
-import type { Professor, Student, Subject } from "@/types";
+import type { Student } from "@/types";
 import { AlertTriangle, CheckCircle2, Clock, Loader2, RefreshCw, Users, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -17,48 +17,29 @@ export const SubjectSelection = () => {
   const { toast } = useToast();
   const dispatch = useAppDispatch();
   const { subjects: subjectsFromStore, isLoading: subjectsLoading } = useAppSelector((state) => state.subjects);
-  console.log('subjectsFromStore :', subjectsFromStore);
   const { professors: professorsFromStore } = useAppSelector((state) => state.professors);
-  console.log('professorsFromStore  :', professorsFromStore );
   const { user: currentUser } = useAppSelector((state) => state.auth);
-  console.log('currentUser :', currentUser);
   
-  // Estado local para materias seleccionadas
+  // Estado local mínimo
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [professors, setProfessors] = useState<Professor[]>([]);
   const [student, setStudent] = useState<Student | null>(null);
-
-  // Cargar datos cuando cambien los stores
-  useEffect(() => {
-    if (subjectsFromStore && subjectsFromStore.length > 0) {
-      setSubjects(subjectsFromStore);
-    }
-    if (professorsFromStore && professorsFromStore.length > 0) {
-      setProfessors(professorsFromStore);
-    }
-  }, [subjectsFromStore, professorsFromStore]);
   
-  // Suscribirse a cambios en tiempo real
+  // Usar datos directamente del store para evitar duplicación
+  const subjects = subjectsFromStore;
+  const professors = professorsFromStore;
+
+  // Suscribirse a cambios del estudiante en tiempo real
   useEffect(() => {
-    // Solo suscribirse si hay un estudiante autenticado
     if (!student?.id) return;
     
-    console.log('Suscribiéndose a cambios en tiempo real para el estudiante:', student.id);
-    
-    // Suscribirse a cambios del estudiante
     const unsubscribeStudent = FirebaseStudentsService.subscribeToStudent(
       student.id,
       (updatedStudent) => {
         if (updatedStudent) {
-          console.log('Estudiante actualizado en tiempo real:', updatedStudent);
-          // Actualizar estado local
           setStudent(updatedStudent);
           setSelectedSubjects(updatedStudent.subjects || []);
-          // Actualizar Redux store
           dispatch(updateStudentFromRealtime(updatedStudent));
-          // También actualizar authSlice si es el usuario actual
           if (currentUser && currentUser.id === updatedStudent.id) {
             dispatch(updateUser(updatedStudent));
           }
@@ -66,24 +47,11 @@ export const SubjectSelection = () => {
       }
     );
     
-    // Suscribirse a cambios de materias
-    const unsubscribeSubjects = FirebaseSubjectsService.subscribeToSubjects(
-      (updatedSubjects) => {
-        console.log('Materias actualizadas en tiempo real:', updatedSubjects);
-        // Actualizar estado local
-        setSubjects(updatedSubjects);
-        // Actualizar Redux store
-        dispatch(updateSubjectsFromRealtime(updatedSubjects));
-      }
-    );
-    
-    // Limpiar suscripciones al desmontar
     return () => {
       unsubscribeStudent();
-      unsubscribeSubjects();
-      console.log('Suscripciones en tiempo real canceladas');
     };
-  }, [student?.id, dispatch, currentUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [student?.id]);
 
   // Cargar datos del estudiante cuando se autentique (solo una vez)
   useEffect(() => {
@@ -225,7 +193,6 @@ export const SubjectSelection = () => {
           variant: "default"
         });
       } catch (error) {
-        console.error('Error al refrescar datos del estudiante:', error);
         toast({
           title: "Error",
           description: "No se pudieron refrescar los datos. Intenta de nuevo.",
@@ -266,11 +233,7 @@ export const SubjectSelection = () => {
         throw new Error("No hay usuario autenticado");
       }
 
-      console.log('Guardando selección para estudiante:', student.id);
-      console.log('Materias seleccionadas:', selectedSubjects);
-      console.log('Créditos totales:', totalSelectedCredits);
-
-      // Primero, obtener el estado actual del estudiante desde Firebase
+      // Obtener el estado actual del estudiante desde Firebase
       const currentStudentData = await FirebaseStudentsService.getStudentById(student.id);
       if (!currentStudentData) {
         throw new Error("No se pudo obtener la información actual del estudiante");
@@ -280,20 +243,6 @@ export const SubjectSelection = () => {
       const currentSubjects = currentStudentData.subjects || [];
       const subjectsToAdd = selectedSubjects.filter(id => !currentSubjects.includes(id));
       const subjectsToRemove = currentSubjects.filter(id => !selectedSubjects.includes(id));
-
-      console.log('Materias a agregar:', subjectsToAdd);
-      console.log('Materias a remover:', subjectsToRemove);
-
-      // Actualizar materias del estudiante usando Redux
-      console.log('Actualizando estudiante con datos:', {
-        id: student.id,
-        subjects: selectedSubjects,
-        credits: totalSelectedCredits,
-        professors: selectedSubjects.map(subjectId => {
-          const subject = subjects.find(s => s.id === subjectId);
-          return subject ? subject.professor : '';
-        }).filter(Boolean)
-      });
       
       const result = await dispatch(updateStudent({
         id: student.id,
@@ -306,21 +255,17 @@ export const SubjectSelection = () => {
           }).filter(Boolean)
         }
       })).unwrap();
-
-      console.log('Estudiante actualizado en Redux, resultado:', result);
       
       // También actualizar el usuario en authSlice si es el usuario actual
       if (currentUser && currentUser.id === student.id && result.updates) {
         dispatch(updateUser(result.updates));
-        console.log('Usuario actualizado en authSlice');
       }
 
-      // Actualizar enrollment de las materias (agregar estudiantes)
+      // Actualizar enrollment de las materias
       for (const subjectId of subjectsToAdd) {
         try {
           const subject = subjects.find(s => s.id === subjectId);
           if (subject) {
-            console.log(`Incrementando enrollment para materia: ${subject.name}`);
             await dispatch(updateSubject({
               id: subjectId,
               updates: {
@@ -329,16 +274,14 @@ export const SubjectSelection = () => {
             })).unwrap();
           }
         } catch (error) {
-          console.error(`Error al incrementar enrollment para ${subjectId}:`, error);
+          // Error silencioso, no afecta el flujo principal
         }
       }
 
-      // Actualizar enrollment de las materias (remover estudiantes)
       for (const subjectId of subjectsToRemove) {
         try {
           const subject = subjects.find(s => s.id === subjectId);
           if (subject) {
-            console.log(`Decrementando enrollment para materia: ${subject.name}`);
             await dispatch(updateSubject({
               id: subjectId,
               updates: {
@@ -347,7 +290,7 @@ export const SubjectSelection = () => {
             })).unwrap();
           }
         } catch (error) {
-          console.error(`Error al decrementar enrollment para ${subjectId}:`, error);
+          // Error silencioso, no afecta el flujo principal
         }
       }
       
@@ -360,10 +303,8 @@ export const SubjectSelection = () => {
         variant: "default"
       });
 
-      console.log('Selección guardada exitosamente');
-
     } catch (error) {
-      console.error("Error al guardar selección:", error);
+      console.log("Error al guardar selección:", error);
       
       let errorMessage = "No se pudo guardar tu selección. Intenta de nuevo.";
       
