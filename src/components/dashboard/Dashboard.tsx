@@ -27,7 +27,7 @@ export const Dashboard = () => {
     totalCredits: 0
   });
 
-  // Cargar datos al montar el componente
+  // Cargar datos al montar el componente (solo una vez)
   useEffect(() => {
     // Solo cargar si no hay datos ya cargados
     if (students.length === 0) {
@@ -39,7 +39,8 @@ export const Dashboard = () => {
     if (professors.length === 0) {
       dispatch(fetchProfessors());
     }
-  }, [dispatch, students.length, subjects.length, professors.length]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Calcular estadísticas cuando cambien los datos
   useEffect(() => {

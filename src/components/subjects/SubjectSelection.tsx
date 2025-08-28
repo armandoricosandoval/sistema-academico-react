@@ -7,8 +7,8 @@ import { FirebaseSubjectsService } from "@/services";
 import { FirebaseStudentsService } from "@/services/firebaseStudents";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateUser } from "@/store/slices/authSlice";
-import { fetchStudents, updateStudent, updateStudentFromRealtime } from "@/store/slices/studentsSlice";
-import { fetchSubjects, updateSubject, updateSubjectsFromRealtime } from "@/store/slices/subjectsSlice";
+import { updateStudent, updateStudentFromRealtime } from "@/store/slices/studentsSlice";
+import { updateSubject, updateSubjectsFromRealtime } from "@/store/slices/subjectsSlice";
 import type { Professor, Student, Subject } from "@/types";
 import { AlertTriangle, CheckCircle2, Clock, Loader2, RefreshCw, Users, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -85,28 +85,23 @@ export const SubjectSelection = () => {
     };
   }, [student?.id, dispatch, currentUser]);
 
-  // Cargar datos del estudiante cuando se autentique
+  // Cargar datos del estudiante cuando se autentique (solo una vez)
   useEffect(() => {
     const loadStudentData = async () => {
-      if (currentUser && currentUser.id) {
+      if (currentUser && currentUser.id && !student) { // Solo cargar si no hay estudiante ya cargado
         try {
-          console.log('Cargando datos del estudiante:', currentUser.id);
-          
           // Intentar obtener datos del estudiante desde Firebase
           const studentData = await FirebaseStudentsService.getStudentById(currentUser.id);
           
           if (studentData) {
-            console.log('Datos del estudiante cargados:', studentData);
             setStudent(studentData);
             setSelectedSubjects(studentData.subjects || []);
           } else {
-            console.log('No se encontró el estudiante en Firebase, usando datos del store');
             // Si no se encuentra en Firebase, usar los datos del store
             setStudent(currentUser as unknown as Student);
             setSelectedSubjects(currentUser.subjects || []);
           }
         } catch (error) {
-          console.error('Error al cargar datos del estudiante:', error);
           // En caso de error, usar los datos del store
           setStudent(currentUser as unknown as Student);
           setSelectedSubjects(currentUser.subjects || []);
@@ -115,7 +110,8 @@ export const SubjectSelection = () => {
     };
 
     loadStudentData();
-  }, [currentUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id]); // 'currentUser' y 'student' intencionalmente limitados para evitar loops
 
   // Función para obtener el nombre del profesor
   const getProfessorName = (professorId: string) => {
@@ -210,15 +206,17 @@ export const SubjectSelection = () => {
     if (student?.id) {
       try {
         setIsLoading(true);
-        // Refrescar datos usando Redux
-        await dispatch(fetchStudents());
-        await dispatch(fetchSubjects());
         
-        // También obtener datos actualizados directamente
+        // Obtener datos actualizados directamente de Firebase
         const freshData = await FirebaseStudentsService.getStudentById(student.id);
         if (freshData) {
           setStudent(freshData);
           setSelectedSubjects(freshData.subjects || []);
+          
+          // Actualizar authSlice si es el usuario actual
+          if (currentUser && currentUser.id === freshData.id) {
+            dispatch(updateUser(freshData));
+          }
         }
         
         toast({
@@ -353,18 +351,8 @@ export const SubjectSelection = () => {
         }
       }
       
-      // Refrescar los datos en Redux
-      console.log('Refrescando datos en Redux...');
-      await Promise.all([
-        dispatch(fetchStudents()),
-        dispatch(fetchSubjects())
-      ]);
-
       // Esperar un momento para que Firebase procese los cambios
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Refrescar datos del estudiante desde Firebase
-      await refreshStudentData();
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       toast({
         title: "Selección guardada",

@@ -16,7 +16,7 @@ export const StudentSubjects = () => {
   
   const [showDetails, setShowDetails] = useState(false);
 
-  // Cargar datos si no están disponibles
+  // Cargar datos si no están disponibles (solo una vez)
   useEffect(() => {
     if (subjects.length === 0) {
       dispatch(fetchSubjects());
@@ -24,7 +24,8 @@ export const StudentSubjects = () => {
     if (professors.length === 0) {
       dispatch(fetchProfessors());
     }
-  }, [dispatch, subjects.length, professors.length]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Obtener materias del usuario actual
   const userSubjects = user ? subjects.filter(subject => 

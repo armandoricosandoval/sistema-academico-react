@@ -20,14 +20,15 @@ const AppContent = () => {
   const { isLoading: subjectsLoading } = useAppSelector(state => state.subjects);
   const { isLoading: professorsLoading } = useAppSelector(state => state.professors);
 
-  // Cargar datos iniciales cuando se autentica
+  // Cargar datos iniciales cuando se autentica (solo una vez por sesión)
   useEffect(() => {
     if (isAuthenticated && user) {
       dispatch(fetchStudents());
       dispatch(fetchSubjects());
       dispatch(fetchProfessors());
     }
-  }, [isAuthenticated, user, dispatch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]); // 'user' intencionalmente omitido para evitar recargas innecesarias
 
   // Si está cargando, mostrar loading
   if (authLoading || studentsLoading || subjectsLoading || professorsLoading) {
