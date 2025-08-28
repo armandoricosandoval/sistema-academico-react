@@ -52,9 +52,8 @@ Un sistema completo de gestión académica desarrollado con **React**, **TypeScr
 
 ### 1. Clonar el repositorio
 ```bash
-git clone <tu-repositorio-github>
-cd pruebatecnica_master_inter
-```
+git clone 
+
 
 ### 2. Instalar dependencias
 ```bash
@@ -149,38 +148,6 @@ firebase login
 firebase init hosting
 firebase deploy
 ```
-
-### Netlify
-```bash
-npm run build
-# Subir carpeta dist/ a Netlify
-```
-
-### Vercel
-```bash
-npm install -g vercel
-vercel
-```
-
-## 📊 Estado del Proyecto
-
-- **✅ Completado**: 100%
-- **🔧 Funcional**: Sistema completo
-- **📱 Responsive**: Diseño adaptativo
-- **🔒 Seguro**: Validaciones robustas
-- **⚡ Rápido**: Optimizado con Vite
-
-## 🤝 Contribución
-
-1. **Fork** el proyecto
-2. **Crea** una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. **Commit** tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** a la rama (`git push origin feature/AmazingFeature`)
-5. **Abre** un Pull Request
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
 ## 👨‍💻 Autor
 
