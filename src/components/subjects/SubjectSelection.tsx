@@ -282,7 +282,17 @@ export const SubjectSelection = () => {
       console.log('Materias a remover:', subjectsToRemove);
 
       // Actualizar materias del estudiante usando Redux
-      await dispatch(updateStudent({
+      console.log('Actualizando estudiante con datos:', {
+        id: student.id,
+        subjects: selectedSubjects,
+        credits: totalSelectedCredits,
+        professors: selectedSubjects.map(subjectId => {
+          const subject = subjects.find(s => s.id === subjectId);
+          return subject ? subject.professor : '';
+        }).filter(Boolean)
+      });
+      
+      const result = await dispatch(updateStudent({
         id: student.id,
         updates: {
           subjects: selectedSubjects,
@@ -294,39 +304,53 @@ export const SubjectSelection = () => {
         }
       })).unwrap();
 
-      console.log('Estudiante actualizado en Redux');
+      console.log('Estudiante actualizado en Redux, resultado:', result);
 
       // Actualizar enrollment de las materias (agregar estudiantes)
       for (const subjectId of subjectsToAdd) {
-        const subject = subjects.find(s => s.id === subjectId);
-        if (subject) {
-          console.log(`Incrementando enrollment para materia: ${subject.name}`);
-          await dispatch(updateSubject({
-            id: subjectId,
-            updates: {
-              enrolled: subject.enrolled + 1
-            }
-          })).unwrap();
+        try {
+          const subject = subjects.find(s => s.id === subjectId);
+          if (subject) {
+            console.log(`Incrementando enrollment para materia: ${subject.name}`);
+            await dispatch(updateSubject({
+              id: subjectId,
+              updates: {
+                enrolled: subject.enrolled + 1
+              }
+            })).unwrap();
+          }
+        } catch (error) {
+          console.error(`Error al incrementar enrollment para ${subjectId}:`, error);
         }
       }
 
       // Actualizar enrollment de las materias (remover estudiantes)
       for (const subjectId of subjectsToRemove) {
-        const subject = subjects.find(s => s.id === subjectId);
-        if (subject) {
-          console.log(`Decrementando enrollment para materia: ${subject.name}`);
-          await dispatch(updateSubject({
-            id: subjectId,
-            updates: {
-              enrolled: Math.max(0, subject.enrolled - 1)
-            }
-          })).unwrap();
+        try {
+          const subject = subjects.find(s => s.id === subjectId);
+          if (subject) {
+            console.log(`Decrementando enrollment para materia: ${subject.name}`);
+            await dispatch(updateSubject({
+              id: subjectId,
+              updates: {
+                enrolled: Math.max(0, subject.enrolled - 1)
+              }
+            })).unwrap();
+          }
+        } catch (error) {
+          console.error(`Error al decrementar enrollment para ${subjectId}:`, error);
         }
       }
       
       // Refrescar los datos en Redux
-      await dispatch(fetchStudents());
-      await dispatch(fetchSubjects());
+      console.log('Refrescando datos en Redux...');
+      await Promise.all([
+        dispatch(fetchStudents()),
+        dispatch(fetchSubjects())
+      ]);
+
+      // Esperar un momento para que Firebase procese los cambios
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Refrescar datos del estudiante desde Firebase
       await refreshStudentData();

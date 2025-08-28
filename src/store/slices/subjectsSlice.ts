@@ -268,11 +268,16 @@ const subjectsSlice = createSlice({
         const { id, updates } = action.payload;
         const index = state.subjects.findIndex(s => s.id === id);
         if (index !== -1) {
-                  state.subjects[index] = { 
-          ...state.subjects[index], 
-          ...updates, 
-          updatedAt: new Date().toISOString() 
-        };
+          // Si updates es un Subject completo, usarlo directamente; si no, hacer merge
+          if (updates && typeof updates === 'object' && 'name' in updates) {
+            state.subjects[index] = updates as Subject;
+          } else {
+            state.subjects[index] = { 
+              ...state.subjects[index], 
+              ...updates, 
+              updatedAt: new Date().toISOString() 
+            };
+          }
         }
         state.error = null;
       })

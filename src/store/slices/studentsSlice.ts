@@ -2,10 +2,10 @@
 
 import { FirebaseStudentsService } from '@/services';
 import type {
-    CreateStudentRequest,
-    Student,
-    StudentsState,
-    UpdateStudentRequest
+  CreateStudentRequest,
+  Student,
+  StudentsState,
+  UpdateStudentRequest
 } from '@/types';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 const CREDITS_PER_SUBJECT = 3;
@@ -58,11 +58,19 @@ export const updateStudent = createAsyncThunk(
   'students/updateStudent',
   async (updateData: UpdateStudentRequest, { rejectWithValue }) => {
     try {
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return updateData;
+      // Usar Firebase para actualizar estudiante
+      await FirebaseStudentsService.updateStudent(updateData);
+      
+      // Obtener los datos actualizados del estudiante
+      const updatedStudent = await FirebaseStudentsService.getStudentById(updateData.id);
+      if (!updatedStudent) {
+        return rejectWithValue('No se pudo obtener el estudiante actualizado');
+      }
+      
+      return { id: updateData.id, updates: updatedStudent };
     } catch (error) {
-      return rejectWithValue('Error al actualizar estudiante');
+      console.error('Error en updateStudent thunk:', error);
+      return rejectWithValue(error instanceof Error ? error.message : 'Error al actualizar estudiante');
     }
   }
 );
@@ -224,16 +232,13 @@ const studentsSlice = createSlice({
       })
       .addCase(updateStudent.fulfilled, (state, action) => {
         state.isLoading = false;
-        const index = state.students.findIndex(s => s.id === action.payload.id);
+        const { id, updates: updatedStudent } = action.payload;
+        const index = state.students.findIndex(s => s.id === id);
         if (index !== -1) {
-          state.students[index] = { 
-            ...state.students[index], 
-            ...action.payload.updates, 
-            updatedAt: new Date().toISOString() 
-          };
+          state.students[index] = updatedStudent;
         }
-        if (state.currentStudent?.id === action.payload.id) {
-          state.currentStudent = { ...state.currentStudent, ...action.payload.updates, updatedAt: new Date().toISOString() };
+        if (state.currentStudent?.id === id) {
+          state.currentStudent = updatedStudent;
         }
         state.error = null;
       })
