@@ -142,6 +142,28 @@ const studentsSlice = createSlice({
       };
     },
     
+    // Reducer para actualizar estudiantes desde tiempo real
+    updateStudentsFromRealtime: (state, action: PayloadAction<Student[]>) => {
+      state.students = action.payload;
+      state.isLoading = false;
+      state.error = null;
+    },
+    
+    // Reducer para actualizar un estudiante específico desde tiempo real
+    updateStudentFromRealtime: (state, action: PayloadAction<Student>) => {
+      const index = state.students.findIndex(s => s.id === action.payload.id);
+      if (index !== -1) {
+        state.students[index] = action.payload;
+      } else {
+        state.students.push(action.payload);
+      }
+      
+      // Si es el estudiante actual, actualizarlo también
+      if (state.currentStudent?.id === action.payload.id) {
+        state.currentStudent = action.payload;
+      }
+    },
+    
     // Reducer para limpiar errores
     clearError: (state) => {
       state.error = null;
@@ -306,7 +328,9 @@ export const {
   updateFilters, 
   clearFilters, 
   clearError, 
-  resetStudents 
+  resetStudents,
+  updateStudentsFromRealtime,
+  updateStudentFromRealtime
 } = studentsSlice.actions;
 
 // Exportar reducer

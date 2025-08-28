@@ -6,15 +6,13 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchProfessors } from "@/store/slices/professorsSlice";
 import { fetchStudents } from "@/store/slices/studentsSlice";
 import { fetchSubjects } from "@/store/slices/subjectsSlice";
-import { BookOpen, GraduationCap, TrendingUp, Users } from "lucide-react";
+import { BookOpen, GraduationCap, Users } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-interface DashboardProps {
-  onNavigate: (section: string) => void;
-}
-
-export const Dashboard = ({ onNavigate }: DashboardProps) => {
+export const Dashboard = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { user } = useAppSelector(state => state.auth);
   const { students, isLoading: studentsLoading } = useAppSelector(state => state.students);
   const { subjects, isLoading: subjectsLoading } = useAppSelector(state => state.subjects);
@@ -32,12 +30,18 @@ export const Dashboard = ({ onNavigate }: DashboardProps) => {
   // Cargar datos al montar el componente (solo una vez)
   useEffect(() => {
     // Solo cargar si no hay datos ya cargados
-    if (students.length === 0 && subjects.length === 0 && professors.length === 0) {
+    // Evitar loop infinito: solo cargar si no hay datos
+    if (students.length === 0) {
       dispatch(fetchStudents());
+    }
+    if (subjects.length === 0) {
       dispatch(fetchSubjects());
+    }
+    if (professors.length === 0) {
       dispatch(fetchProfessors());
     }
-  }, [dispatch, students.length, subjects.length, professors.length]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Calcular estadísticas cuando cambien los datos
   useEffect(() => {
@@ -68,8 +72,6 @@ export const Dashboard = ({ onNavigate }: DashboardProps) => {
   const userSubjects = user ? subjects.filter(subject => 
     user.subjects.includes(subject.id)
   ) : [];
-
-  // Obtener profesores del usuario actual
 
   const isLoading = studentsLoading || subjectsLoading || professorsLoading;
 
@@ -108,7 +110,7 @@ export const Dashboard = ({ onNavigate }: DashboardProps) => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="shadow-card hover:shadow-card-hover transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Créditos Actuales</CardTitle>
@@ -145,19 +147,6 @@ export const Dashboard = ({ onNavigate }: DashboardProps) => {
             <div className="text-2xl font-bold text-success">{stats.totalStudents}</div>
             <p className="text-xs text-muted-foreground">
               registrados
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card hover:shadow-card-hover transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Promedio General</CardTitle>
-            <TrendingUp className="h-4 w-4 text-warning" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-warning">{stats.averageGPA}</div>
-            <p className="text-xs text-muted-foreground">
-              GPA promedio
             </p>
           </CardContent>
         </Card>
@@ -234,7 +223,7 @@ export const Dashboard = ({ onNavigate }: DashboardProps) => {
             <Button 
               variant="outline" 
               className="flex items-center gap-2"
-              onClick={() => onNavigate('subjects')}
+              onClick={() => navigate('/subjects')}
             >
               <BookOpen className="h-4 w-4" />
               Ver Materias
@@ -242,7 +231,7 @@ export const Dashboard = ({ onNavigate }: DashboardProps) => {
             <Button 
               variant="outline" 
               className="flex items-center gap-2"
-              onClick={() => onNavigate('students')}
+              onClick={() => navigate('/students')}
             >
               <Users className="h-4 w-4" />
               Ver Estudiantes
@@ -250,7 +239,7 @@ export const Dashboard = ({ onNavigate }: DashboardProps) => {
             <Button 
               variant="outline" 
               className="flex items-center gap-2"
-              onClick={() => onNavigate('my-subjects')}
+              onClick={() => navigate('/my-subjects')}
             >
               <BookOpen className="h-4 w-4" />
               Mis Materias

@@ -1,198 +1,146 @@
-# 🎓 Sistema Académico - Prueba Técnica
+# Sistema Académico Universitario
 
-Un sistema completo de gestión académica desarrollado con **React**, **TypeScript**, **Redux Toolkit** y **Firebase**.
+## Descripción
 
-## ✨ Características Principales
+Sistema de gestión académica universitaria desarrollado como prueba técnica para la posición de Ingeniero Master Web. Permite a estudiantes seleccionar materias, visualizar información académica y gestionar su progreso, implementando validaciones de negocio y actualizaciones en tiempo real.
 
-### 🔐 Autenticación y Usuarios
-- **Registro e inicio de sesión** con Firebase Authentication
-- **Perfiles de estudiantes** personalizables
-- **Gestión de sesiones** persistente con Redux Persist
+## Especificaciones Técnicas
 
-### 📚 Gestión de Materias
-- **Selección de materias** con validaciones de negocio
-- **Límite de 3 materias** por semestre
-- **Límite de 15 créditos** por semestre
-- **Validación de profesores** (no duplicados)
-- **Persistencia en Firebase** en tiempo real
+### Frontend
+- **Framework**: React 18
+- **Lenguaje**: TypeScript 4.9+
+- **Gestión de Estado**: Redux Toolkit
+- **Persistencia**: Redux Persist
+- **Enrutamiento**: React Router DOM v6
+- **Estilos**: Tailwind CSS + Shadcn/ui
+- **Build Tool**: Vite
 
-### 👨‍🏫 Gestión de Profesores
-- **Asignación de materias** a profesores
-- **Límite de 2 materias** por profesor
-- **Validaciones de capacidad** y disponibilidad
+### Backend
+- **Plataforma**: Firebase
+- **Autenticación**: Firebase Authentication
+- **Base de Datos**: Firestore
+- **Hosting**: Firebase Hosting
 
-### 📊 Dashboard Inteligente
-- **Estadísticas en tiempo real** desde Firebase
-- **Progreso académico** del estudiante
-- **Navegación fluida** entre componentes
-- **Información actualizada** automáticamente
+### Patrones y Arquitectura
+- **Arquitectura**: Flux (implementada con Redux)
+- **Patrón de Componentes**: Container/Presentational
+- **Estructura de Estado**: Slice Pattern
+- **Comunicación con API**: Repository Pattern
+- **Tiempo Real**: Observer Pattern (Firestore subscriptions)
 
-## 🚀 Tecnologías Utilizadas
+## Requerimientos Implementados
 
-- **Frontend**: React 18 + TypeScript
-- **Estado**: Redux Toolkit + Redux Persist
-- **UI**: Shadcn/ui + Tailwind CSS
-- **Backend**: Firebase (Auth + Firestore)
-- **Rutas**: React Router DOM
-- **Build**: Vite
+1. **Autenticación de Usuarios**
+   - Registro e inicio de sesión con email/contraseña
+   - Persistencia de sesión entre recargas
 
-## 📋 Requisitos del Sistema
+2. **Gestión de Materias**
+   - Selección de hasta 3 materias por estudiante
+   - Límite de 9 créditos por semestre
+   - Validación de profesor único por estudiante
+   - Control de cupos disponibles
 
-### Funcionalidades Implementadas
-1. ✅ **CRUD de registro en línea** para usuarios
-2. ✅ **Programa de créditos** con límites estrictos
-3. ✅ **10 materias** disponibles (3 créditos cada una)
-4. ✅ **Límite de 3 materias** por estudiante
-5. ✅ **5 profesores** con máximo 2 materias cada uno
-6. ✅ **Validación de profesores** únicos por estudiante
-7. ✅ **Visualización de registros** de otros estudiantes
-8. ✅ **Información de compañeros** por materia
+3. **Gestión de Profesores**
+   - Asignación de materias a profesores
+   - Límite de 2 materias por profesor
 
-## 🛠️ Instalación y Configuración
+4. **Visualización de Datos**
+   - Dashboard con estadísticas en tiempo real
+   - Lista de estudiantes con filtros
+   - Perfil de usuario editable
 
-### 1. Clonar el repositorio
+## Instalación y Ejecución
+
 ```bash
-git clone <tu-repositorio-github>
-cd pruebatecnica_master_inter
-```
+# Clonar repositorio
+git clone https://github.com/armandoricosandoval@gamil.com/sistema-academico.git
+cd sistema-academico
 
-### 2. Instalar dependencias
-```bash
+# Instalar dependencias
 npm install
-```
 
-### 3. Configurar Firebase
-Crea un archivo `.env.local` en la raíz del proyecto:
-
-```env
-VITE_FIREBASE_API_KEY=tu_api_key
-VITE_FIREBASE_AUTH_DOMAIN=tu_proyecto.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=tu_proyecto_id
-VITE_FIREBASE_STORAGE_BUCKET=tu_proyecto.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=tu_sender_id
-VITE_FIREBASE_APP_ID=tu_app_id
-VITE_FIREBASE_MEASUREMENT_ID=tu_measurement_id
-```
-
-### 4. Ejecutar en desarrollo
-```bash
+# Ejecutar en desarrollo
 npm run dev
-```
 
-### 5. Construir para producción
-```bash
+# Compilar para producción
 npm run build
 ```
 
-## 🔧 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 src/
 ├── components/          # Componentes React
-│   ├── auth/           # Autenticación
-│   ├── dashboard/      # Panel principal
-│   ├── layout/         # Layout y navegación
-│   ├── students/       # Gestión de estudiantes
-│   └── subjects/       # Gestión de materias
-├── store/              # Redux Store
-│   ├── slices/         # Slices de Redux
-│   └── hooks.ts        # Hooks personalizados
-├── services/           # Servicios de Firebase
-├── types/              # Tipos TypeScript
-└── utils/              # Utilidades
+│   ├── auth/            # Autenticación
+│   ├── dashboard/       # Dashboard principal
+│   ├── layout/          # Componentes de layout
+│   ├── students/        # Gestión de estudiantes
+│   ├── subjects/        # Gestión de materias
+│   └── ui/              # Componentes UI reutilizables
+├── routes/              # Configuración de rutas
+├── layouts/             # Layouts de aplicación
+├── store/               # Redux store y slices
+├── services/            # Servicios de Firebase
+├── types/               # Tipos TypeScript
+└── utils/               # Utilidades generales
 ```
 
-## 📱 Funcionalidades del Usuario
+## Características Técnicas Destacadas
 
-### 🎯 Dashboard Principal
-- **Resumen académico** personalizado
-- **Estadísticas del sistema** en tiempo real
-- **Acceso rápido** a todas las funciones
+1. **Tiempo Real**
+   - Suscripciones a Firestore para actualización en tiempo real
+   - Sincronización entre múltiples clientes
 
-### 📚 Selección de Materias
-- **Catálogo completo** de materias disponibles
-- **Validaciones automáticas** de límites
-- **Persistencia inmediata** en Firebase
-- **Feedback visual** de estado y errores
+2. **Optimización de Rendimiento**
+   - Memoización de componentes y selectores
+   - Lazy loading de rutas
+   - Code splitting
 
-### 👤 Mi Perfil
-- **Información personal** editable
-- **Progreso académico** actualizado
-- **Historial de materias** y profesores
+3. **Manejo de Estado**
+   - Estado global con Redux Toolkit
+   - Estado local con React Hooks
+   - Persistencia con Redux Persist
 
-### 📖 Mis Materias
-- **Lista detallada** de materias inscritas
-- **Información de profesores** asignados
-- **Prerrequisitos** y horarios
-- **Estadísticas de créditos** con progreso
+4. **Validaciones**
+   - Validación de formularios con Zod
+   - Validaciones de negocio en tiempo real
+   - Feedback visual de errores
 
-## 🔒 Validaciones de Negocio
+5. **Seguridad**
+   - Reglas de seguridad en Firestore
+   - Autenticación segura con Firebase
+   - Protección de rutas en frontend
 
-### 📊 Límites Académicos
-- **Máximo 3 materias** por semestre
-- **Máximo 15 créditos** por semestre
-- **No profesor duplicado** en materias
-- **Capacidad disponible** en materias
+## Implementaciones Técnicas Avanzadas
 
-### ✅ Reglas de Validación
-- **Verificación de prerrequisitos** antes de inscripción
-- **Validación de capacidad** de materias
-- **Control de profesores** disponibles
-- **Sincronización automática** con Firebase
+### Enrutamiento y Navegación
+- Implementación de React Router v6 con rutas protegidas
+- Navegación programática con `useNavigate`
+- Layouts anidados para estructura consistente
 
-## 🌐 Despliegue
+### Gestión de Estado Global
+- Slices de Redux para modularidad
+- Thunks para operaciones asíncronas
+- Selectores memoizados para rendimiento
 
-### Firebase Hosting
-```bash
-npm install -g firebase-tools
-firebase login
-firebase init hosting
-firebase deploy
-```
+### Integración con Firebase
+- Servicios modulares para cada entidad
+- Suscripciones en tiempo real
+- Manejo de errores y reintentos
 
-### Netlify
-```bash
-npm run build
-# Subir carpeta dist/ a Netlify
-```
+### Componentes Reutilizables
+- Implementación de Shadcn/ui para consistencia
+- Componentes de UI personalizados
+- Patrones de composición
 
-### Vercel
-```bash
-npm install -g vercel
-vercel
-```
+## Despliegue
 
-## 📊 Estado del Proyecto
+Para instrucciones detalladas sobre cómo desplegar la aplicación, consulta la [Guía de Despliegue](./DEPLOYMENT.md).
 
-- **✅ Completado**: 100%
-- **🔧 Funcional**: Sistema completo
-- **📱 Responsive**: Diseño adaptativo
-- **🔒 Seguro**: Validaciones robustas
-- **⚡ Rápido**: Optimizado con Vite
+Opciones disponibles:
+- Firebase Hosting (recomendado para producción)
+- GitHub Pages (recomendado para demo)
 
-## 🤝 Contribución
+## Contacto
 
-1. **Fork** el proyecto
-2. **Crea** una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. **Commit** tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** a la rama (`git push origin feature/AmazingFeature`)
-5. **Abre** un Pull Request
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
-
-## 👨‍💻 Autor
-
-**Tu Nombre** - [tu-email@ejemplo.com](mailto:tu-email@ejemplo.com)
-
-## 🙏 Agradecimientos
-
-- **Shadcn/ui** por los componentes de UI
-- **Firebase** por el backend robusto
-- **Redux Toolkit** por el manejo de estado
-- **Vite** por la herramienta de build rápida
-
----
-
-⭐ **Si te gusta este proyecto, dale una estrella en GitHub!**
+**Armando Rico** - [armandoricosandoval@gmail.com](mailto:armandoricosandoval@gmail.com)

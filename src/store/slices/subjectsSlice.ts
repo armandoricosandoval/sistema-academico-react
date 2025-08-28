@@ -58,17 +58,24 @@ export const updateSubject = createAsyncThunk(
   'subjects/updateSubject',
   async ({ id, updates }: { id: SubjectId; updates: Partial<Subject> }, { rejectWithValue }) => {
     try {
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 1000));
       const CREDITS_PER_SUBJECT = 3;
       // Validar créditos si se están actualizando
       if (updates.credits && updates.credits !== CREDITS_PER_SUBJECT) {
         return rejectWithValue('Cada materia debe tener exactamente 3 créditos');
       }
       
-      return { id, updates };
+      // Usar Firebase para actualizar la materia
+      await FirebaseSubjectsService.updateSubject(id, updates);
+      
+      // Obtener la materia actualizada para asegurar que tenemos los datos más recientes
+      const updatedSubject = await FirebaseSubjectsService.getSubjectById(id);
+      if (!updatedSubject) {
+        return { id, updates };
+      }
+      
+      return { id, updates: updatedSubject };
     } catch (error) {
-      return rejectWithValue('Error al actualizar materia');
+      return rejectWithValue(error instanceof Error ? error.message : 'Error al actualizar materia');
     }
   }
 );
@@ -190,6 +197,13 @@ const subjectsSlice = createSlice({
         selectedProfessor: '',
         selectedSemester: '',
       };
+    },
+    
+    // Reducer para actualizar materias desde tiempo real
+    updateSubjectsFromRealtime: (state, action: PayloadAction<Subject[]>) => {
+      state.subjects = action.payload;
+      state.isLoading = false;
+      state.error = null;
     },
     
     // Reducer para limpiar errores
@@ -336,7 +350,8 @@ export const {
   updateFilters, 
   clearFilters, 
   clearError, 
-  resetSubjects 
+  resetSubjects,
+  updateSubjectsFromRealtime
 } = subjectsSlice.actions;
 
 // Exportar reducer

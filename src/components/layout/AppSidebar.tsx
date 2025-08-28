@@ -27,7 +27,7 @@ const navigation = [
     { title: "📚 Materias", url: "/subjects", icon: BookOpen },
     { title: "📖 Mis Materias", url: "/my-subjects", icon: BookOpen },
     { title: "Administrador de Datos", url: "/admin", icon: BookOpen },
-    { title: "🌱 Datos de Prueba", url: "/seed-data", icon: BookOpen },
+    //{ title: "🌱 Datos de Prueba", url: "/seed-data", icon: BookOpen },
 
   ];
 
