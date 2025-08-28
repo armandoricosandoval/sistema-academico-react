@@ -31,12 +31,13 @@ export const AuthRouter = ({ isAuthenticated }: AuthRouterProps) => {
 
   // Si ya está autenticado, redirigir al dashboard
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return (
     <Routes>
       <Route path="/login" element={<LoginForm onLogin={handleLogin} onRegister={handleRegister} />} />
+      <Route path="/" element={<LoginForm onLogin={handleLogin} onRegister={handleRegister} />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

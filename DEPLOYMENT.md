@@ -70,10 +70,20 @@ git push origin main
 ### 2. Configurar vite.config.ts
 ```typescript
 export default defineConfig({
-  base: '/nombre-del-repositorio/',  // Importante para GitHub Pages
+  base: '/sistema-academico-react/',  // Importante para GitHub Pages
   // ... resto de la configuración
 })
 ```
+
+### 2.1. Configuración SPA para GitHub Pages
+
+**IMPORTANTE**: GitHub Pages requiere configuración especial para aplicaciones SPA:
+
+1. **Archivo 404.html**: Ya incluido en `public/404.html` para manejar rutas del lado del cliente
+2. **Script en index.html**: Ya incluido para procesar redirecciones
+3. **Basename en React Router**: Configurado en `AppContent.tsx` con `/sistema-academico-react`
+
+Estos archivos permiten que las rutas como `/dashboard`, `/subjects`, etc. funcionen correctamente después del despliegue.
 
 ### 3. Instalar gh-pages
 
@@ -109,43 +119,6 @@ npm run deploy
 
 ## Consideraciones Importantes
 
-### Para Firebase Hosting:
-
-1. **Variables de Entorno**:
-   - Crear `.env.production` con las variables necesarias
-   - Asegurarse de que las variables estén configuradas en Firebase
-
-2. **Reglas de Seguridad**:
-   ```javascript
-   // firestore.rules
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /{document=**} {
-         allow read, write: if request.auth != null;
-       }
-     }
-   }
-   ```
-
-3. **Caché y Performance**:
-   ```json
-   {
-     "hosting": {
-       "headers": [
-         {
-           "source": "**/*.@(jpg|jpeg|gif|png|svg|webp)",
-           "headers": [
-             {
-               "key": "Cache-Control",
-               "value": "max-age=31536000"
-             }
-           ]
-         }
-       ]
-     }
-   }
-   ```
 
 ### Para GitHub Pages:
 

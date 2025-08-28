@@ -1,5 +1,8 @@
 // Update this page (the content is just a fallback if you fail to update the page)
 
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+
 const Index = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -8,6 +11,11 @@ const Index = () => {
         <p className="text-xl text-muted-foreground">
           Este es un proyecto de prueba técnica para Master Inter.
         </p>
+        <Button>
+          <Link to="/dashboard">
+            Dashboard
+          </Link>
+        </Button>
       </div>
     </div>
   );

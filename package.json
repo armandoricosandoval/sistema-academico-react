@@ -12,7 +12,9 @@
     "clean": "rm -rf node_modules package-lock.json dist .vite .eslintcache",
     "firebase:deploy": "firebase deploy",
     "firebase:rules": "firebase deploy --only firestore:rules",
-    "firebase:indexes": "firebase deploy --only firestore:indexes"
+    "firebase:indexes": "firebase deploy --only firestore:indexes",
+     "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

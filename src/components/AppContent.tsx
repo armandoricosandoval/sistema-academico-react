@@ -35,7 +35,7 @@ const AppContent = () => {
   }
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/sistema-academico-react">
       {isAuthenticated ? (
         <MainLayout>
           <AppRouter isAuthenticated={isAuthenticated} />
