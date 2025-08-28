@@ -2,12 +2,12 @@
 
 import { FirebaseProfessorsService } from '@/services';
 import type {
-    Professor,
-    ProfessorId,
-    ProfessorsState,
-    SubjectId
+  Professor,
+  ProfessorId,
+  ProfessorsState,
+  SubjectId
 } from '@/types';
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 // Estado inicial
 const initialState: ProfessorsState = {
@@ -192,6 +192,13 @@ const professorsSlice = createSlice({
         state.error = 'Algunos profesores no tienen exactamente 2 materias asignadas';
       }
     },
+    
+    // Reducer para actualizar profesores desde tiempo real
+    updateProfessorsFromRealtime: (state, action: PayloadAction<Professor[]>) => {
+      state.professors = action.payload;
+      state.isLoading = false;
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     // Obtener profesores
@@ -314,7 +321,8 @@ const professorsSlice = createSlice({
 export const { 
   clearError, 
   resetProfessors, 
-  validateSubjectDistribution 
+  validateSubjectDistribution,
+  updateProfessorsFromRealtime
 } = professorsSlice.actions;
 
 // Exportar reducer

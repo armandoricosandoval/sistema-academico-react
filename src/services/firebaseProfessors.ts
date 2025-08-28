@@ -2,20 +2,20 @@
 
 import type { Professor } from '@/types';
 import {
-    addDoc,
-    collection,
-    deleteDoc,
-    doc,
-    DocumentData,
-    getDoc,
-    getDocs,
-    onSnapshot,
-    orderBy,
-    query,
-    QuerySnapshot,
-    updateDoc,
-    where,
-    writeBatch
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  DocumentData,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+  QuerySnapshot,
+  updateDoc,
+  where,
+  writeBatch
 } from 'firebase/firestore';
 import { collections, db } from './firebase';
 
@@ -318,7 +318,7 @@ export class FirebaseProfessorsService {
         
         // Filtrar por término de búsqueda
         if (professor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            professor.specialty.toLowerCase().includes(searchTerm.toLowerCase())) {
+            professor.email.toLowerCase().includes(searchTerm.toLowerCase())) {
           professors.push(professor);
         }
       });
@@ -354,5 +354,23 @@ export class FirebaseProfessorsService {
       console.error('Error al validar distribución:', error);
       throw new Error('Error al validar distribución de materias');
     }
+  }
+
+  // Escuchar cambios en tiempo real de todos los profesores
+  static subscribeToAll(callback: (professors: Professor[]) => void) {
+    const professorsRef = collection(db, collections.professors);
+    const q = query(professorsRef, orderBy('name', 'asc'));
+    
+    return onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
+      const professors: Professor[] = [];
+      querySnapshot.forEach((doc) => {
+        professors.push({
+          id: doc.id,
+          ...doc.data()
+        } as Professor);
+      });
+      
+      callback(professors);
+    });
   }
 }

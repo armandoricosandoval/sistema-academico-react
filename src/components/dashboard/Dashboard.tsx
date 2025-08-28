@@ -2,10 +2,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { FirebaseStudentsService, FirebaseSubjectsService, FirebaseProfessorsService } from "@/services";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchProfessors } from "@/store/slices/professorsSlice";
-import { fetchStudents } from "@/store/slices/studentsSlice";
-import { fetchSubjects } from "@/store/slices/subjectsSlice";
+import { updateUser } from "@/store/slices/authSlice";
+import { fetchProfessors, updateProfessorsFromRealtime } from "@/store/slices/professorsSlice";
+import { fetchStudents, updateStudentsFromRealtime } from "@/store/slices/studentsSlice";
+import { fetchSubjects, updateSubjectsFromRealtime } from "@/store/slices/subjectsSlice";
 import { BookOpen, GraduationCap, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -39,6 +41,45 @@ export const Dashboard = () => {
     if (professors.length === 0) {
       dispatch(fetchProfessors());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Subscripciones en tiempo real para mantener datos actualizados
+  useEffect(() => {
+    // Suscripción a estudiantes
+    const unsubscribeStudents = FirebaseStudentsService.subscribeToStudents(
+      (updatedStudents) => {
+        dispatch(updateStudentsFromRealtime(updatedStudents));
+        
+        // Actualizar usuario actual si está en la lista
+        if (user) {
+          const currentUserData = updatedStudents.find(s => s.id === user.id);
+          if (currentUserData) {
+            dispatch(updateUser(currentUserData));
+          }
+        }
+      }
+    );
+
+    // Suscripción a materias
+    const unsubscribeSubjects = FirebaseSubjectsService.subscribeToSubjects(
+      (updatedSubjects) => {
+        dispatch(updateSubjectsFromRealtime(updatedSubjects));
+      }
+    );
+
+    // Suscripción a profesores
+    const unsubscribeProfessors = FirebaseProfessorsService.subscribeToAll(
+      (updatedProfessors) => {
+        dispatch(updateProfessorsFromRealtime(updatedProfessors));
+      }
+    );
+
+    return () => {
+      unsubscribeStudents();
+      unsubscribeSubjects();
+      unsubscribeProfessors();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -2,9 +2,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FirebaseSubjectsService, FirebaseProfessorsService, FirebaseStudentsService } from "@/services";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchProfessors } from "@/store/slices/professorsSlice";
-import { fetchSubjects } from "@/store/slices/subjectsSlice";
+import { updateUser } from "@/store/slices/authSlice";
+import { fetchProfessors, updateProfessorsFromRealtime } from "@/store/slices/professorsSlice";
+import { fetchSubjects, updateSubjectsFromRealtime } from "@/store/slices/subjectsSlice";
 import { BookOpen, Clock, GraduationCap, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -26,6 +28,45 @@ export const StudentSubjects = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Subscripciones en tiempo real para mantener datos actualizados
+  useEffect(() => {
+    // Suscripción a materias
+    const unsubscribeSubjects = FirebaseSubjectsService.subscribeToSubjects(
+      (updatedSubjects) => {
+        dispatch(updateSubjectsFromRealtime(updatedSubjects));
+      }
+    );
+
+    // Suscripción a profesores
+    const unsubscribeProfessors = FirebaseProfessorsService.subscribeToAll(
+      (updatedProfessors) => {
+        dispatch(updateProfessorsFromRealtime(updatedProfessors));
+      }
+    );
+
+    // Suscripción al usuario actual para actualizaciones de sus materias
+    let unsubscribeUser: (() => void) | null = null;
+    if (user?.id) {
+      unsubscribeUser = FirebaseStudentsService.subscribeToStudent(
+        user.id,
+        (updatedStudent) => {
+          if (updatedStudent) {
+            dispatch(updateUser(updatedStudent));
+          }
+        }
+      );
+    }
+
+    return () => {
+      unsubscribeSubjects();
+      unsubscribeProfessors();
+      if (unsubscribeUser) {
+        unsubscribeUser();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   // Obtener materias del usuario actual
   const userSubjects = user ? subjects.filter(subject => 
