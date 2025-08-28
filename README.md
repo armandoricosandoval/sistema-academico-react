@@ -184,15 +184,6 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ## 👨‍💻 Autor
 
-**Tu Nombre** - [tu-email@ejemplo.com](mailto:tu-email@ejemplo.com)
-
-## 🙏 Agradecimientos
-
-- **Shadcn/ui** por los componentes de UI
-- **Firebase** por el backend robusto
-- **Redux Toolkit** por el manejo de estado
-- **Vite** por la herramienta de build rápida
-
----
+**Tu Nombre** - [armandoricosandoval@gmail.com)
 
 ⭐ **Si te gusta este proyecto, dale una estrella en GitHub!**

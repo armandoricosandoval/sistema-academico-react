@@ -1,137 +1,93 @@
-import { useState } from "react";
-import { Search, Filter, Users, BookOpen, User, Mail, Phone } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
-interface Student {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  subjects: string[];
-  professors: string[];
-  semester: number;
-  gpa: number;
-}
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchProfessors } from "@/store/slices/professorsSlice";
+import { fetchStudents } from "@/store/slices/studentsSlice";
+import { fetchSubjects } from "@/store/slices/subjectsSlice";
+import { BookOpen, Filter, Loader2, Mail, Phone, Search, User, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export const StudentsList = () => {
+  const dispatch = useAppDispatch();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubject, setSelectedSubject] = useState<string>("all");
   const [selectedProfessor, setSelectedProfessor] = useState<string>("all");
-
-  const students: Student[] = [
-    {
-      id: 1,
-      name: "María González",
-      email: "maria.gonzalez@universidad.edu",
-      phone: "+1 (555) 123-4567",
-      subjects: ["Cálculo I", "Física General", "Química Orgánica"],
-      professors: ["Dr. Rodríguez", "Dra. López", "Prof. García"],
-      semester: 3,
-      gpa: 8.7
-    },
-    {
-      id: 2,
-      name: "Carlos Mendoza",
-      email: "carlos.mendoza@universidad.edu",
-      phone: "+1 (555) 234-5678",
-      subjects: ["Cálculo I", "Programación I", "Estadística"],
-      professors: ["Dr. Rodríguez", "Dr. Martínez", "Dra. Herrera"],
-      semester: 2,
-      gpa: 9.1
-    },
-    {
-      id: 3,
-      name: "Ana Rodríguez",
-      email: "ana.rodriguez@universidad.edu",
-      phone: "+1 (555) 345-6789",
-      subjects: ["Física General", "Microbiología", "Química Orgánica"],
-      professors: ["Dra. López", "Dra. Fernández", "Prof. García"],
-      semester: 4,
-      gpa: 8.9
-    },
-    {
-      id: 4,
-      name: "Luis Herrera",
-      email: "luis.herrera@universidad.edu",
-      phone: "+1 (555) 456-7890",
-      subjects: ["Programación I", "Estadística", "Economía Internacional"],
-      professors: ["Dr. Martínez", "Dra. Herrera", "Prof. Silva"],
-      semester: 3,
-      gpa: 8.4
-    },
-    {
-      id: 5,
-      name: "Sofia Castillo",
-      email: "sofia.castillo@universidad.edu",
-      phone: "+1 (555) 567-8901",
-      subjects: ["Historia del Arte", "Psicología Social", "Diseño Gráfico"],
-      professors: ["Prof. Morales", "Dr. Castillo", "Dra. Vega"],
-      semester: 5,
-      gpa: 9.3
-    },
-    {
-      id: 6,
-      name: "Diego Morales",
-      email: "diego.morales@universidad.edu",
-      phone: "+1 (555) 678-9012",
-      subjects: ["Cálculo I", "Física General", "Estadística"],
-      professors: ["Dr. Rodríguez", "Dra. López", "Dra. Herrera"],
-      semester: 2,
-      gpa: 7.8
-    },
-    {
-      id: 7,
-      name: "Valentina López",
-      email: "valentina.lopez@universidad.edu",
-      phone: "+1 (555) 789-0123",
-      subjects: ["Microbiología", "Química Orgánica", "Psicología Social"],
-      professors: ["Dra. Fernández", "Prof. García", "Dr. Castillo"],
-      semester: 4,
-      gpa: 8.6
-    },
-    {
-      id: 8,
-      name: "Roberto Silva",
-      email: "roberto.silva@universidad.edu",
-      phone: "+1 (555) 890-1234",
-      subjects: ["Economía Internacional", "Historia del Arte", "Programación I"],
-      professors: ["Prof. Silva", "Prof. Morales", "Dr. Martínez"],
-      semester: 3,
-      gpa: 8.2
+  
+  // Obtener datos de Redux
+  const { students, isLoading: studentsLoading } = useAppSelector(state => state.students);
+  const { subjects, isLoading: subjectsLoading } = useAppSelector(state => state.subjects);
+  const { professors, isLoading: professorsLoading } = useAppSelector(state => state.professors);
+  
+  // Cargar datos al montar el componente
+  useEffect(() => {
+    if (students.length === 0) {
+      dispatch(fetchStudents());
     }
-  ];
+    if (subjects.length === 0) {
+      dispatch(fetchSubjects());
+    }
+    if (professors.length === 0) {
+      dispatch(fetchProfessors());
+    }
+  }, [dispatch, students.length, subjects.length, professors.length]);
+  
+  // Mapear nombres de materias y profesores
+  const getSubjectName = (subjectId: string) => {
+    const subject = subjects.find(s => s.id === subjectId);
+    return subject ? subject.name : subjectId;
+  };
+  
+  const getProfessorName = (professorId: string) => {
+    const professor = professors.find(p => p.id === professorId);
+    return professor ? professor.name : professorId;
+  };
+  
+  // Mapear estudiantes con nombres de materias y profesores
+  const mappedStudents = students.map(student => ({
+    ...student,
+    subjectNames: (student.subjects || []).map(getSubjectName),
+    professorNames: (student.professors || []).map(getProfessorName)
+  }));
 
   // Get unique subjects and professors for filters
-  const allSubjects = Array.from(new Set(students.flatMap(s => s.subjects))).sort();
-  const allProfessors = Array.from(new Set(students.flatMap(s => s.professors))).sort();
+  const allSubjects = Array.from(new Set(subjects.map(s => s.name))).sort();
+  const allProfessors = Array.from(new Set(professors.map(p => p.name))).sort();
 
   // Filter students based on search and selections
-  const filteredStudents = students.filter(student => {
+  const filteredStudents = mappedStudents.filter(student => {
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          student.email.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesSubject = selectedSubject === "all" || student.subjects.includes(selectedSubject);
-    const matchesProfessor = selectedProfessor === "all" || student.professors.includes(selectedProfessor);
+    const matchesSubject = selectedSubject === "all" || student.subjectNames.includes(selectedSubject);
+    const matchesProfessor = selectedProfessor === "all" || student.professorNames.includes(selectedProfessor);
     
     return matchesSearch && matchesSubject && matchesProfessor;
   });
 
-  const getGpaColor = (gpa: number) => {
-    if (gpa >= 9.0) return "text-success";
-    if (gpa >= 8.0) return "text-warning";
-    return "text-destructive";
-  };
 
   const getGpaBadgeVariant = (gpa: number) => {
     if (gpa >= 9.0) return "default";
     if (gpa >= 8.0) return "secondary";
     return "destructive";
   };
+
+  // Estado de carga
+  const isLoading = studentsLoading || subjectsLoading || professorsLoading;
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Cargando datos de estudiantes...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -320,7 +276,7 @@ export const StudentsList = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {student.subjects.map((subject, index) => (
+                        {student.subjectNames.map((subject, index) => (
                           <Badge key={index} variant="outline" className="text-xs">
                             {subject}
                           </Badge>
@@ -329,7 +285,7 @@ export const StudentsList = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {student.professors.map((professor, index) => (
+                        {student.professorNames.map((professor, index) => (
                           <Badge key={index} variant="secondary" className="text-xs">
                             {professor}
                           </Badge>
