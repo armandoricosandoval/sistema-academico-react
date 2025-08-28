@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { FirebaseSubjectsService } from "@/services";
 import { FirebaseStudentsService } from "@/services/firebaseStudents";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { updateUser } from "@/store/slices/authSlice";
 import { fetchStudents, updateStudent, updateStudentFromRealtime } from "@/store/slices/studentsSlice";
 import { fetchSubjects, updateSubject, updateSubjectsFromRealtime } from "@/store/slices/subjectsSlice";
 import type { Professor, Student, Subject } from "@/types";
@@ -57,6 +58,10 @@ export const SubjectSelection = () => {
           setSelectedSubjects(updatedStudent.subjects || []);
           // Actualizar Redux store
           dispatch(updateStudentFromRealtime(updatedStudent));
+          // También actualizar authSlice si es el usuario actual
+          if (currentUser && currentUser.id === updatedStudent.id) {
+            dispatch(updateUser(updatedStudent));
+          }
         }
       }
     );
@@ -78,7 +83,7 @@ export const SubjectSelection = () => {
       unsubscribeSubjects();
       console.log('Suscripciones en tiempo real canceladas');
     };
-  }, [student?.id, dispatch]);
+  }, [student?.id, dispatch, currentUser]);
 
   // Cargar datos del estudiante cuando se autentique
   useEffect(() => {
@@ -305,6 +310,12 @@ export const SubjectSelection = () => {
       })).unwrap();
 
       console.log('Estudiante actualizado en Redux, resultado:', result);
+      
+      // También actualizar el usuario en authSlice si es el usuario actual
+      if (currentUser && currentUser.id === student.id && result.updates) {
+        dispatch(updateUser(result.updates));
+        console.log('Usuario actualizado en authSlice');
+      }
 
       // Actualizar enrollment de las materias (agregar estudiantes)
       for (const subjectId of subjectsToAdd) {

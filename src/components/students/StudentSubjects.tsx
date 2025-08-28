@@ -2,16 +2,29 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchProfessors } from "@/store/slices/professorsSlice";
+import { fetchSubjects } from "@/store/slices/subjectsSlice";
 import { BookOpen, Clock, GraduationCap, Users } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const StudentSubjects = () => {
+  const dispatch = useAppDispatch();
   const { user } = useAppSelector(state => state.auth);
-  const { subjects } = useAppSelector(state => state.subjects);
-  const { professors } = useAppSelector(state => state.professors);
+  const { subjects, isLoading: subjectsLoading } = useAppSelector(state => state.subjects);
+  const { professors, isLoading: professorsLoading } = useAppSelector(state => state.professors);
   
   const [showDetails, setShowDetails] = useState(false);
+
+  // Cargar datos si no están disponibles
+  useEffect(() => {
+    if (subjects.length === 0) {
+      dispatch(fetchSubjects());
+    }
+    if (professors.length === 0) {
+      dispatch(fetchProfessors());
+    }
+  }, [dispatch, subjects.length, professors.length]);
 
   // Obtener materias del usuario actual
   const userSubjects = user ? subjects.filter(subject => 
@@ -35,6 +48,19 @@ export const StudentSubjects = () => {
             <p className="text-muted-foreground">Debes iniciar sesión para ver tus materias</p>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  if (subjectsLoading || professorsLoading) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Cargando tus materias...</p>
+          </div>
+        </div>
       </div>
     );
   }

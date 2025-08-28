@@ -27,10 +27,9 @@ export const Dashboard = () => {
     totalCredits: 0
   });
 
-  // Cargar datos al montar el componente (solo una vez)
+  // Cargar datos al montar el componente
   useEffect(() => {
     // Solo cargar si no hay datos ya cargados
-    // Evitar loop infinito: solo cargar si no hay datos
     if (students.length === 0) {
       dispatch(fetchStudents());
     }
@@ -40,8 +39,7 @@ export const Dashboard = () => {
     if (professors.length === 0) {
       dispatch(fetchProfessors());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [dispatch, students.length, subjects.length, professors.length]);
 
   // Calcular estadísticas cuando cambien los datos
   useEffect(() => {
@@ -66,7 +64,7 @@ export const Dashboard = () => {
         totalCredits
       });
     }
-  }, [students, subjects, professors, studentsLoading, subjectsLoading, professorsLoading]);
+  }, [students, subjects, professors, studentsLoading, subjectsLoading, professorsLoading, user]);
 
   // Obtener materias del usuario actual
   const userSubjects = user ? subjects.filter(subject => 

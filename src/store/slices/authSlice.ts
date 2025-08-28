@@ -92,6 +92,13 @@ const authSlice = createSlice({
       state.isLoading = false;
       state.error = null;
     },
+    
+    // Reducer para actualizar usuario actual (para sincronizar con studentsSlice)
+    updateUser: (state, action: PayloadAction<Student>) => {
+      if (state.user && state.user.id === action.payload.id) {
+        state.user = action.payload;
+      }
+    },
   },
   extraReducers: (builder) => {
     // Login
@@ -165,7 +172,7 @@ const authSlice = createSlice({
 });
 
 // Exportar acciones
-export const { clearError, setUser, resetAuth } = authSlice.actions;
+export const { clearError, setUser, resetAuth, updateUser } = authSlice.actions;
 
 // Exportar reducer
 export default authSlice.reducer;
